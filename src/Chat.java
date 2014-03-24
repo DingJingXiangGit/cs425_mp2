@@ -4,23 +4,27 @@ import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Scanner;
 
-import strategy.Multicast;
-import strategy.ReliableMulticast;
-import model.Mediator;
+import strategy.BasicMulticast;
+import strategy.ReliableUnicastReceiver;
+import strategy.ReliableUnicastSender;
 import model.Member;
+import model.MemberIndexer;
+import model.Message;
 import model.Profile;
-import model.ReliableUnicastReceiver;
 
 public class Chat {
 	private ReliableUnicastReceiver _receiver;
-	private  Multicast multicast;
+	private ReliableUnicastSender _sender;
+	
 	public Chat(int delayTime, double dropRate, String file, int id){
 		List<Member> members = new ArrayList<Member>();
 		Profile profile = Profile.getInstance();
-		Mediator mediator = Mediator.getInstance();
+		MemberIndexer memberIndexer = MemberIndexer.getInstance();
 		try {
 			Scanner scanner = new Scanner(new File(file));
 			while(scanner.hasNext()){
@@ -32,6 +36,7 @@ public class Chat {
 				member._ip =  parts[1];
 				member._port = Integer.parseInt(parts[2]);
 				member._userName = parts[3];
+				member._groupId = Integer.parseInt(parts[4]);
 				members.add(member);
 				if(Integer.parseInt(parts[0]) == id){
 					profile.id = id;
@@ -45,9 +50,10 @@ public class Chat {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		mediator.addMembers(members);
-		this._receiver = new ReliableUnicastReceiver(profile.ip, profile.port);
-		multicast = new ReliableMulticast();
+		memberIndexer.addMembers(members);
+		this._sender = ReliableUnicastSender.getInstance();
+		this._receiver = ReliableUnicastReceiver.getInstance(); 
+		this._receiver.init(profile.ip, profile.port);
 	}
 	
 	public void waitUserMessage(){
@@ -69,7 +75,21 @@ public class Chat {
 	}
 	
 	private void multicastMessage(String content){
-		multicast.send(1, content);
+		/*
+		MemberIndexer memberIndexer = MemberIndexer.getInstance();
+		Map<Integer, Member> members = memberIndexer.getAllMembers();
+		Profile profile = Profile.getInstance();
+		Message message = new Message();
+		message._content = content;
+		message._action = "delivery";
+		message._id = profile.id;
+		for(Entry<Integer, Member> entry:members.entrySet()){
+			_sender.send(message, entry.getValue());
+		}*/
+		
+		BasicMulticast reliableMulticast = BasicMulticast.getInstance();
+		reliableMulticast.send(1, content);
+		
 	}
 	
 	public static void main(String[] args){

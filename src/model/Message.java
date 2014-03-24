@@ -1,12 +1,66 @@
 package model;
-public class Message {
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement(name="Message")
+public class Message implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1823741L;
+
+	@XmlElement(name="Content")
 	public String _content;
+	
+	@XmlElement(name="Sequence")
 	public int _sequence;
+	
+	@XmlElement(name="ID")
 	public int _id;
+	
+	@XmlElement(name="Action")
 	public String _action;
 	
 	public Message(){
 		
+	}
+	
+	public String getContent(){
+		return _content;
+	}
+	public int getSequence(){
+		return _sequence;
+	}
+	
+	public int getId(){
+		return _id;
+	}
+	
+	public String getAction(){
+		return _action;
+	}
+	
+	public void setContent(String content){
+		this._content = content;
+	}
+	
+	public void setSequence(int sequence){
+		this._sequence = sequence;
+	}
+	
+	public void setId(int id){
+		this._id = id;
+	}
+	
+	public void setAction(String action){
+		this._action = action;
 	}
 	
 	public Message(Message msg) {
@@ -16,21 +70,35 @@ public class Message {
 		this._action = msg._action;
 	}
 
-	public String toString(){
-		return String.format("{%d, %d, %s, %s}", _sequence, _id, _action, _content);
+	public byte[] getBytes(){
+		ObjectOutputStream out = null;
+	    ByteArrayOutputStream bos = null;
+		try {
+			bos = new ByteArrayOutputStream();
+			out = new ObjectOutputStream(bos);
+			out.writeObject(this);
+			return bos.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
-	public static Message parse(String message){
-		Message result = new Message();
-		message = message.trim();
-		message = message.substring(1, message.length() - 2);
-		String[] tokens = message.split(", ");
-		System.out.println("input:"+message);
-		result._sequence = Integer.parseInt(tokens[0]);
-		result._id = Integer.parseInt(tokens[1]);
-		result._action = tokens[2];
-		result._content = tokens[3];
-		return result;
+	public String toString(){
+		return String.format("{sequence:%d, id:%d, action:%s, content:%s}", _sequence, _id, _action, _content);
+	}
+	
+	public static Message parse(byte[] content){
+		ByteArrayInputStream bis;
+		ObjectInput in;
+		try {
+			bis = new ByteArrayInputStream(content);
+		    in = new ObjectInputStream(bis);
+			return (Message)in.readObject();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public String getAckString(){

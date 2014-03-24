@@ -7,6 +7,54 @@ public class Profile {
 	public String name;
 	public int delay;
 	public double dropRate;
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getDelay() {
+		return delay;
+	}
+
+	public void setDelay(int delay) {
+		this.delay = delay;
+	}
+
+	public double getDropRate() {
+		return dropRate;
+	}
+
+	public void setDropRate(double dropRate) {
+		this.dropRate = dropRate;
+	}
+
 	private static Profile _instance = new Profile();
 	private Profile(){
 		

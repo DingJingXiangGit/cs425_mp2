@@ -1,25 +1,63 @@
 package model;
 
-public class ReliableMulticastMessage {
-	public int _groupId;
-	public int _sourceId;
-	public int _sourceGroupSequence;
-	public String _content;
+public class BasicMulticastMessage {
+	public int groupId;
+	public int sourceId;
+	public int sourceGroupSequence;
+	public String content;
 	
+	public int getGroupId() {
+		return groupId;
+	}
+
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
+	}
+
+
+	public int getSourceId() {
+		return sourceId;
+	}
+
+
+	public void setSourceId(int sourceId) {
+		this.sourceId = sourceId;
+	}
+
+
+	public int getSourceGroupSequence() {
+		return sourceGroupSequence;
+	}
+
+
+	public void setSourceGroupSequence(int sourceGroupSequence) {
+		this.sourceGroupSequence = sourceGroupSequence;
+	}
+
+
+	public String getContent() {
+		return content;
+	}
+
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+
 	public String toString(){
-		return String.format("%d,\t%d,\t%s,\t%s", _groupId, _sourceId, _sourceGroupSequence, _content);
+		return String.format("%d,\t%d,\t%s,\t%s", groupId, sourceId, sourceGroupSequence, content);
 	}
 	
 	
-	public static ReliableMulticastMessage parse(String message){
-		ReliableMulticastMessage result = new ReliableMulticastMessage();
-		message = message.substring(1, message.length() - 2);
+	public static BasicMulticastMessage parse(String message){
+		BasicMulticastMessage result = new BasicMulticastMessage();
 		String[] tokens = message.split(",\t");
-		System.out.println("input:"+message);
-		result._groupId = Integer.parseInt(tokens[0]);
-		result._sourceId = Integer.parseInt(tokens[1]);
-		result._sourceGroupSequence = Integer.parseInt(tokens[2]);
-		result._content = tokens[3];
+		result.groupId = Integer.parseInt(tokens[0]);
+		result.sourceId = Integer.parseInt(tokens[1]);
+		result.sourceGroupSequence = Integer.parseInt(tokens[2]);
+		result.content = tokens[3];
 		return result;
 	}
 }
