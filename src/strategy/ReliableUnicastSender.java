@@ -16,7 +16,7 @@ import model.Profile;
 import model.RetransmissionTask;
 
 public class ReliableUnicastSender {
-	private static int EXPIRE_TIME = 3000;
+	private static int EXPIRE_TIME = 10000;
 	private static ReliableUnicastSender _instance = new ReliableUnicastSender();
 	
 	private DatagramSocket _socket;

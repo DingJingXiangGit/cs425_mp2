@@ -35,6 +35,10 @@ public class MemberIndexer {
 		}
 	}
 	
+	public int getGroupSize(int groupId){
+		return _memberGroupTable.get(groupId).size();
+	}
+	
 	public Member getById(int memberId){
 		return _memberTable.get(memberId);
 	}

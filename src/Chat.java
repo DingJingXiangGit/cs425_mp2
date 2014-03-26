@@ -5,16 +5,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 
-import strategy.BasicMulticast;
+import strategy.CausalOrderMulticast;
 import strategy.ReliableUnicastReceiver;
 import strategy.ReliableUnicastSender;
 import model.Member;
 import model.MemberIndexer;
-import model.Message;
 import model.Profile;
 
 public class Chat {
@@ -87,9 +84,10 @@ public class Chat {
 			_sender.send(message, entry.getValue());
 		}*/
 		
-		BasicMulticast reliableMulticast = BasicMulticast.getInstance();
-		reliableMulticast.send(1, content);
-		
+		//BasicMulticast reliableMulticast = BasicMulticast.getInstance();
+		//reliableMulticast.send(1, content);
+		CausalOrderMulticast causalOrderMulticast = CausalOrderMulticast.getInstance();
+		causalOrderMulticast.send(1, content);
 	}
 	
 	public static void main(String[] args){

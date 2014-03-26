@@ -11,7 +11,7 @@ public class Member {
 		_groupId = -1;
 		_id = -1;
 	}
-	
+	/*
 	public void send(String content){
 		Profile profile = Profile.getInstance();
 		Message message = new Message();
@@ -19,7 +19,7 @@ public class Member {
 		message._action = "delivery";
 		message._id = profile.id;
 	}
-	
+	*/
 	public String getIP(){
 		return _ip;
 	}

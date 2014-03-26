@@ -17,7 +17,7 @@ public class Message implements Serializable{
 	private static final long serialVersionUID = 1823741L;
 
 	@XmlElement(name="Content")
-	public String _content;
+	public BasicMulticastMessage _content;
 	
 	@XmlElement(name="Sequence")
 	public int _sequence;
@@ -32,7 +32,7 @@ public class Message implements Serializable{
 		
 	}
 	
-	public String getContent(){
+	public BasicMulticastMessage getContent(){
 		return _content;
 	}
 	public int getSequence(){
@@ -47,7 +47,7 @@ public class Message implements Serializable{
 		return _action;
 	}
 	
-	public void setContent(String content){
+	public void setContent(BasicMulticastMessage content){
 		this._content = content;
 	}
 	

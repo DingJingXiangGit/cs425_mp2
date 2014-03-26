@@ -1,10 +1,16 @@
 package model;
 
-public class BasicMulticastMessage {
+import java.io.Serializable;
+
+public class BasicMulticastMessage implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 41234021L;
 	public int groupId;
 	public int sourceId;
 	public int sourceGroupSequence;
-	public String content;
+	public IMessage content;
 	
 	public int getGroupId() {
 		return groupId;
@@ -36,28 +42,17 @@ public class BasicMulticastMessage {
 	}
 
 
-	public String getContent() {
+	public IMessage getContent() {
 		return content;
 	}
 
 
-	public void setContent(String content) {
+	public void setContent(IMessage content) {
 		this.content = content;
 	}
 
 
 	public String toString(){
-		return String.format("%d,\t%d,\t%s,\t%s", groupId, sourceId, sourceGroupSequence, content);
-	}
-	
-	
-	public static BasicMulticastMessage parse(String message){
-		BasicMulticastMessage result = new BasicMulticastMessage();
-		String[] tokens = message.split(",\t");
-		result.groupId = Integer.parseInt(tokens[0]);
-		result.sourceId = Integer.parseInt(tokens[1]);
-		result.sourceGroupSequence = Integer.parseInt(tokens[2]);
-		result.content = tokens[3];
-		return result;
+		return String.format("{group:%d, source:%d, group_sequence:%s, content:%s}", groupId, sourceId, sourceGroupSequence, content);
 	}
 }

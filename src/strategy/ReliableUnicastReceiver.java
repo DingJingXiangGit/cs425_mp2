@@ -108,8 +108,8 @@ public class ReliableUnicastReceiver implements Runnable {
 	
 	public void delivery(Message message){
 		if(message.getId() != Profile.getInstance().id){
-			BasicMulticast reliableMulticast = BasicMulticast.getInstance();
-			reliableMulticast.delivery(message.getContent());
+			BasicMulticast basicMulticast = BasicMulticast.getInstance();
+			basicMulticast.delivery(message.getContent());
 		}
 	}
 }

@@ -7,6 +7,7 @@ public class Profile {
 	public String name;
 	public int delay;
 	public double dropRate;
+	
 	public int getId() {
 		return id;
 	}
