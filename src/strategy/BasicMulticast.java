@@ -9,6 +9,7 @@ import model.MemberIndexer;
 import model.Message;
 import model.BasicMulticastMessage;
 import model.Member;
+import model.MulticastType;
 import model.Profile;
 
 public class BasicMulticast{
@@ -37,23 +38,56 @@ public class BasicMulticast{
 		multicast(groupId, message);
 	}
 	
+	public void reply(int groupId, int source, IMessage content){
+		MemberIndexer memberIndexer;
+		Map<Integer, Member> groupMembers;
+		Profile profile;
+		Message message;
+		BasicMulticastMessage basicMessage;
+		
+		basicMessage = new BasicMulticastMessage();
+		basicMessage.content = content;
+		basicMessage.groupId = groupId;
+		if(_sourceGroupSequence.containsKey(groupId) == false){
+			_sourceGroupSequence.put(groupId, 0);
+		}
+		basicMessage.sourceGroupSequence = _sourceGroupSequence.get(groupId);
+		
+		memberIndexer = MemberIndexer.getInstance();
+		groupMembers = memberIndexer.getByGroupId(groupId);
+		profile = Profile.getInstance();
+		message = new Message();
+		message.setAction("delivery");
+		message.setContent(basicMessage);
+		message.setId(profile.getId());
+		
+		_sender.send(message, groupMembers.get(source));
+	}
+	
 	private void multicast(int groupId, BasicMulticastMessage data ){
 		MemberIndexer memberIndexer = MemberIndexer.getInstance();
 		Map<Integer, Member> groupMembers = memberIndexer.getByGroupId(groupId);
 		Profile profile = Profile.getInstance();
-		Message message = new Message();
-		message.setAction("delivery");
-		message.setContent(data);
-		message.setId(profile.getId());
+		
 
 		for(Entry<Integer, Member> entry: groupMembers.entrySet()){
+			Message message = new Message();
+			message.setAction("delivery");
+			message.setContent(data);
+			message.setId(profile.getId());
 			_sender.send(message, entry.getValue());
 		}
 	}
 
 	public void delivery(BasicMulticastMessage message) {
-		CausalOrderMulticast com = CausalOrderMulticast.getInstance();
-		System.out.println("basic multicast = "+message);
-		com.delivery(message.getContent());
+		//System.out.println("basic multicast delivery: "+message);
+		if(Profile.getInstance().getMulticastType() == MulticastType.CausalOrder){
+			CausalOrderMulticast com = CausalOrderMulticast.getInstance();
+			com.delivery(message.getContent());
+		}else if(Profile.getInstance().getMulticastType() == MulticastType.TotalOrder){
+			TotalOrderMulticast tom = TotalOrderMulticast.getInstance();
+			tom.delivery(message.getContent());
+		}
+		
 	}
 }

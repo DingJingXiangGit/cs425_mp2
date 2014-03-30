@@ -1,5 +1,4 @@
 package model;
-
 import java.io.Serializable;
 
 
@@ -64,11 +63,30 @@ public class TotalOrderMulticastMessage implements IMessage, Serializable, Compa
 		return serialVersionUID;
 	}
 	
-	
+	public String toString(){
+		return String.format("{mid:%d, message type:%s, group:%d, source:%d, sequence: %d, content:%s}", 
+				messageId,
+				messageType,
+				groupId,
+				source,
+				sequence,
+				content);
+	}
 	
 	@Override
 	public int compareTo(TotalOrderMulticastMessage o) {
-		return this.sequence - o.sequence;
+		System.out.println(this.sequence +" v.s "+o.sequence +" ? == "+o.sequence.equals(this.sequence));
+		if(o.sequence.equals(this.sequence) == false){
+			return this.sequence - o.sequence;
+		}else{
+			if(o.isDeliverable() == false && this.isDeliverable() == true){
+				return -1;
+			}else if(o.isDeliverable() == true && this.isDeliverable() == false){
+				return 1;
+			}else{
+				return this.source - o.source;
+			}
+		}
 	}
 	
 }

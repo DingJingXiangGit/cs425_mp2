@@ -17,16 +17,16 @@ public class Message implements Serializable{
 	private static final long serialVersionUID = 1823741L;
 
 	@XmlElement(name="Content")
-	public BasicMulticastMessage _content;
+	private BasicMulticastMessage _content;
 	
 	@XmlElement(name="Sequence")
-	public int _sequence;
+	private int _sequence;
 	
 	@XmlElement(name="ID")
-	public int _id;
+	private int _id;
 	
 	@XmlElement(name="Action")
-	public String _action;
+	private String _action;
 	
 	public Message(){
 		
@@ -52,6 +52,7 @@ public class Message implements Serializable{
 	}
 	
 	public void setSequence(int sequence){
+		//System.out.println("original "+this._sequence +" to " +sequence );
 		this._sequence = sequence;
 	}
 	

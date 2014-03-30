@@ -1,5 +1,3 @@
-
-
 import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -7,18 +5,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import strategy.CausalOrderMulticast;
-import strategy.ReliableUnicastReceiver;
-import strategy.ReliableUnicastSender;
 import model.Member;
 import model.MemberIndexer;
+import model.MulticastType;
 import model.Profile;
+import strategy.CausalOrderMulticast;
+import strategy.ReliableUnicastReceiver;
+import strategy.TotalOrderMulticast;
 
 public class Chat {
 	private ReliableUnicastReceiver _receiver;
-	private ReliableUnicastSender _sender;
+	//private ReliableUnicastSender _sender;
 	
-	public Chat(int delayTime, double dropRate, String file, int id){
+	public Chat(int delayTime, double dropRate, String file, int id, String orderType){
 		List<Member> members = new ArrayList<Member>();
 		Profile profile = Profile.getInstance();
 		MemberIndexer memberIndexer = MemberIndexer.getInstance();
@@ -42,19 +41,27 @@ public class Chat {
 					profile.name = parts[3];
 					profile.delay = delayTime;
 					profile.dropRate = dropRate;
+					if(orderType.equals("TotalOrder")){
+						profile.setMulticastType(MulticastType.TotalOrder);
+					}else if(orderType.equals("CausalOrder")){
+						profile.setMulticastType(MulticastType.CausalOrder);
+					}
 				}
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+		
 		memberIndexer.addMembers(members);
-		this._sender = ReliableUnicastSender.getInstance();
 		this._receiver = ReliableUnicastReceiver.getInstance(); 
 		this._receiver.init(profile.ip, profile.port);
 	}
 	
 	public void waitUserMessage(){
 		Console console = System.console();
+		for(int i = 0; i < 5; ++i){
+			multicastMessage(Profile.getInstance().getId()+" broadcast "+ i);
+		}
 		
 		while(true){
 			System.out.print("type your message:");
@@ -62,7 +69,9 @@ public class Chat {
 			if(command.equals("exit")){
 				break;
 			}
-			multicastMessage(command);
+			if(command.trim().length() > 0){
+				multicastMessage(command);
+			}
 		}
 		System.out.println("Bye.");
 	}
@@ -72,30 +81,29 @@ public class Chat {
 	}
 	
 	private void multicastMessage(String content){
-		/*
-		MemberIndexer memberIndexer = MemberIndexer.getInstance();
-		Map<Integer, Member> members = memberIndexer.getAllMembers();
-		Profile profile = Profile.getInstance();
-		Message message = new Message();
-		message._content = content;
-		message._action = "delivery";
-		message._id = profile.id;
-		for(Entry<Integer, Member> entry:members.entrySet()){
-			_sender.send(message, entry.getValue());
-		}*/
-		
 		//BasicMulticast reliableMulticast = BasicMulticast.getInstance();
 		//reliableMulticast.send(1, content);
-		CausalOrderMulticast causalOrderMulticast = CausalOrderMulticast.getInstance();
-		causalOrderMulticast.send(1, content);
+		
+		if(Profile.getInstance().getMulticastType() == MulticastType.CausalOrder){
+			CausalOrderMulticast causalOrderMulticast = CausalOrderMulticast.getInstance();
+			causalOrderMulticast.send(1, content);
+		}else if(Profile.getInstance().getMulticastType() == MulticastType.TotalOrder){
+			TotalOrderMulticast totalOrderMulticast = TotalOrderMulticast.getInstance();
+			totalOrderMulticast.send(1, content);
+		}
 	}
 	
 	public static void main(String[] args){
-		if(args.length != 4){
-			System.out.println("java Char configFile delayTime dropRate selfId");
+		if(args.length != 5){
+			System.out.println("java Char configFile delayTime dropRate selfId order");
 			return;
 		}
-		Chat chat = new Chat(Integer.parseInt(args[1]), Double.parseDouble(args[2]), args[0], Integer.parseInt(args[3]));
+		Chat chat = new Chat(
+				Integer.parseInt(args[1]),
+				Double.parseDouble(args[2]),
+				args[0],
+				Integer.parseInt(args[3]),
+				args[4]);
 		chat.startListen();
 		chat.waitUserMessage();
 	}

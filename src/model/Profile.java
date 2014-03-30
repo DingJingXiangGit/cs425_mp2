@@ -7,7 +7,16 @@ public class Profile {
 	public String name;
 	public int delay;
 	public double dropRate;
+	public MulticastType multicastType;
 	
+	public MulticastType getMulticastType() {
+		return multicastType;
+	}
+
+	public void setMulticastType(MulticastType multicastType) {
+		this.multicastType = multicastType;
+	}
+
 	public int getId() {
 		return id;
 	}

@@ -64,7 +64,7 @@ public class ReliableUnicastReceiver implements Runnable {
 				senderId = message.getId();
 				member = memberIndexer.getById(senderId);
 				
-				System.out.println("receive: " + message.toString());
+				//System.out.println("receive: " + message.toString());
 				if(message.getAction().equals("delivery")){
 					int _nextReceiveSequence;
 					Map<Integer, Message> _messageBuffer;
@@ -77,7 +77,7 @@ public class ReliableUnicastReceiver implements Runnable {
 					}
 					_messageBuffer = _messageBufferTable.get(senderId);
 					_nextReceiveSequence = _nextSequenceTable.get(senderId);
-					System.out.println("received sequence = "+message.getSequence()+" expected sequence = " + _nextReceiveSequence);
+					//System.out.println("received sequence = "+message.getSequence()+" expected sequence = " + _nextReceiveSequence);
 					if(message.getSequence() >= _nextReceiveSequence){
 						//avoid duplicated message
 						_unicastSender.sendAck(message, member);
@@ -107,9 +107,9 @@ public class ReliableUnicastReceiver implements Runnable {
 	}
 	
 	public void delivery(Message message){
-		if(message.getId() != Profile.getInstance().id){
-			BasicMulticast basicMulticast = BasicMulticast.getInstance();
-			basicMulticast.delivery(message.getContent());
-		}
+		//if(message.getId() != Profile.getInstance().id){
+		BasicMulticast basicMulticast = BasicMulticast.getInstance();
+		basicMulticast.delivery(message.getContent());
+		//}
 	}
 }

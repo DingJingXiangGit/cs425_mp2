@@ -48,18 +48,23 @@ public class CausalOrderMulticast{
 		comm.setGroupId(groupId);
 		_basicMulticast.send(groupId, comm);	
 		groupTimeVector.put(groupId, timeVector);
+		System.out.println("send: "+getTimeVectorString(timeVector) +": "+comm.getContent());
 	}
 
 	public void delivery(IMessage message) {
 		CausalOrderMulticastMessage comm = (CausalOrderMulticastMessage)message;
+		if(comm.getSource() == Profile.getInstance().getId()){
+			return;
+		}
 		List<CausalOrderMulticastMessage> holdbackQueue;
 		List<CausalOrderMulticastMessage> deleteQueue;
 		Integer[] timeVector;
-		System.out.println(comm);
-		System.out.println(message);
-		System.out.println("table size = "+holdbackQueueTable.size());
+		//System.out.println(comm);
+		//System.out.println(message);
+		//System.out.println("table size = "+holdbackQueueTable.size());
 		int groupId = comm.getGroupId();
-		
+		System.out.println("receive: "+getTimeVectorString(comm.getTimeVector()) +": "+comm.getContent());
+
 		if(holdbackQueueTable.containsKey(groupId) == false){
 			holdbackQueueTable.put(groupId, new LinkedList<CausalOrderMulticastMessage>());
 		}
@@ -77,6 +82,8 @@ public class CausalOrderMulticast{
 		timeVector = groupTimeVector.get(comm.getGroupId());
 		holdbackQueue = holdbackQueueTable.get(comm.getGroupId());
 		holdbackQueue.add(comm);
+		
+		
 		for(CausalOrderMulticastMessage msg : holdbackQueue){
 			Integer[] msgTimeVector = msg.getTimeVector();
 			int sourceId = comm.getSource();
@@ -94,11 +101,24 @@ public class CausalOrderMulticast{
 			if(isReady){
 				deleteQueue.add(msg);
 				timeVector[sourceId] += 1;
-				System.out.println(comm.getContent());
+				System.out.println("delivery: "+getTimeVectorString(timeVector) +": "+comm.getContent());
 			}
 		}
 		
 		holdbackQueue.removeAll(deleteQueue);
 		groupTimeVector.put(comm.getGroupId(), timeVector);
+	}
+	
+	private String getTimeVectorString(Integer[] timeVector){
+		StringBuilder builder = new StringBuilder();
+		builder.append("[");
+		for(int i = 0; i < timeVector.length; ++i){
+			builder.append(timeVector[i]);
+			if(i != timeVector.length - 1){
+				builder.append(", ");
+			}
+		}
+		builder.append("]");
+		return builder.toString();
 	}
 }
