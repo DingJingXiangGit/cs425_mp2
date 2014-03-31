@@ -9,6 +9,16 @@ public class TotalOrderMulticastMessage implements IMessage, Serializable, Compa
 	private Integer source;
 	private Integer sequence;
 	private Integer messageId;
+    private Integer totalOrderSequence;
+
+    public Integer getTotalOrderSequence() {
+        return totalOrderSequence;
+    }
+
+    public void setTotalOrderSequence(Integer totalOrderSequence) {
+        this.totalOrderSequence = totalOrderSequence;
+    }
+
 	public Integer getMessageId() {
 		return messageId;
 	}
@@ -64,8 +74,9 @@ public class TotalOrderMulticastMessage implements IMessage, Serializable, Compa
 	}
 	
 	public String toString(){
-		return String.format("{mid:%d, message type:%s, group:%d, source:%d, sequence: %d, content:%s}", 
+		return String.format("{mid:%d, tos:%d, message type:%s, group:%d, source:%d, sequence: %d, content:%s}",
 				messageId,
+                totalOrderSequence,
 				messageType,
 				groupId,
 				source,
