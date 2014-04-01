@@ -1,9 +1,6 @@
 package strategy;
 
-import model.IMessage;
-import model.Profile;
-import model.TotalOrderMessageType;
-import model.TotalOrderMulticastMessage;
+import model.*;
 
 import java.util.*;
 
@@ -16,16 +13,22 @@ import java.util.*;
  */
 public class TotalOrderMulticastWithSequencer {
     private static TotalOrderMulticastWithSequencer _instance = new TotalOrderMulticastWithSequencer();
-    private BasicMulticast basicMulticast = BasicMulticast.getInstance();
+    private BasicMulticast basicMulticast;
     Queue<TotalOrderMulticastMessage> holdbackQueue;
+    Queue<TotalOrderMulticastMessage> orderQueue;
     Set<Integer> orderSequencesReceived;
+    private Object _mutex;
 
     private static int nextTotalOrderSequence = 0;
 
     private TotalOrderMulticastWithSequencer()
     {
+        basicMulticast = BasicMulticast.getInstance();
         holdbackQueue = new LinkedList<TotalOrderMulticastMessage>();
+        orderQueue = new LinkedList<TotalOrderMulticastMessage>();
         orderSequencesReceived = new HashSet<Integer>();
+        _mutex = new Object();
+        TimerTask timerTask = new MessageWaitTask(this);
     }
 
     public static TotalOrderMulticastWithSequencer getInstance()
@@ -47,58 +50,87 @@ public class TotalOrderMulticastWithSequencer {
         tomm.setMessageType(TotalOrderMessageType.INITIAL);
 
         basicMulticast.send(groupId, tomm);
-        nextTotalOrderSequence++;
+//        synchronized (_mutex)
+//        {
+//            nextTotalOrderSequence++;
+//        }
     }
 
     public void delivery(IMessage message) {
         TotalOrderMulticastMessage tomm = (TotalOrderMulticastMessage)message;
 
-        if (tomm.getSource() == Profile.getInstance().getId()){
-            return;
-        }
+//        if (tomm.getSource() == Profile.getInstance().getId()){
+//            return;
+//        }
 
-        //System.out.println("received: " + message.toString());
+        System.out.println("received: " + tomm.toString());
 
         TotalOrderMessageType messageType = tomm.getMessageType();
-        if (messageType == TotalOrderMessageType.INITIAL)
+        synchronized (_mutex)
         {
-            holdbackQueue.add(tomm);
-        }
-        else if (messageType == TotalOrderMessageType.ORDER)
-        {
-            orderSequencesReceived.add(tomm.getTotalOrderSequence());
-            for (TotalOrderMulticastMessage m : holdbackQueue)
+            if (messageType == TotalOrderMessageType.INITIAL)
             {
-                //System.out.println(m.toString());
-                if (m.getSource().equals(tomm.getSource()) && m.getContent().equals(tomm.getContent())) {
-//                    System.out.println(
-//                        String.format("changed tos from %d to %d", m.getTotalOrderSequence(), tomm.getTotalOrderSequence())
-//                    );
-                    m.setTotalOrderSequence(tomm.getTotalOrderSequence());
+                for (TotalOrderMulticastMessage m : orderQueue)
+                {
+                    if (m.getSource().equals(tomm.getSource()) && m.getContent().equals(tomm.getContent())) {
+                        //                    System.out.println(
+                        //                        String.format("changed tos from %d to %d", m.getTotalOrderSequence(), tomm.getTotalOrderSequence())
+                        //                    );
+                        tomm.setTotalOrderSequence(m.getTotalOrderSequence());
+                        orderQueue.remove(m);
+                    }
                 }
-                else {
-//                    System.out.print("same source: ");
-//                    System.out.print(m.getSource().equals(tomm.getSource()));
-//                    System.out.print(", same content: ");
-//                    System.out.println(m.getContent().equals(tomm.getContent()));
+
+                holdbackQueue.add(tomm);
+            }
+            else if (messageType == TotalOrderMessageType.ORDER)
+            {
+                orderSequencesReceived.add(tomm.getTotalOrderSequence());
+                orderQueue.add(tomm);
+                for (TotalOrderMulticastMessage m : holdbackQueue)
+                {
+                    //System.out.println(m.toString());
+                    if (m.getSource().equals(tomm.getSource()) && m.getContent().equals(tomm.getContent())) {
+    //                    System.out.println(
+    //                        String.format("changed tos from %d to %d", m.getTotalOrderSequence(), tomm.getTotalOrderSequence())
+    //                    );
+                        m.setTotalOrderSequence(tomm.getTotalOrderSequence());
+                        orderQueue.remove(tomm);
+                    }
+                    else {
+
+                    }
                 }
             }
         }
 
-        while(orderSequencesReceived.contains(nextTotalOrderSequence))
+
+    }
+
+    public boolean waitForNextMessage()
+    {
+        System.out.println(String.format("looking for message with TO sequence - %d", nextTotalOrderSequence));
+
+        synchronized (_mutex)
         {
-//            System.out.println(String.format("looking for message with TO sequence - %d", nextTotalOrderSequence));
+            if (!orderSequencesReceived.contains(nextTotalOrderSequence)) {
+                return false;
+            }
+
             for (TotalOrderMulticastMessage m : holdbackQueue)
             {
-//                System.out.println(m.toString());
+                System.out.println(m.toString());
                 if (m.getTotalOrderSequence() == nextTotalOrderSequence)
                 {
                     String out = String.format("message from %d: %s", m.getSource(), m.getContent());
                     System.out.println(out);
                     holdbackQueue.remove(m);
+                    nextTotalOrderSequence++;
+                    return true;
                 }
             }
-            nextTotalOrderSequence++;
+
+            return false;
         }
     }
 }
