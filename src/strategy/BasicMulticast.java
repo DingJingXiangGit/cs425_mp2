@@ -5,7 +5,6 @@ import model.*;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 
 public class BasicMulticast{
 	private static BasicMulticast _instance = new BasicMulticast();
@@ -63,23 +62,6 @@ public class BasicMulticast{
 		MemberIndexer memberIndexer = MemberIndexer.getInstance();
 		Map<Integer, Member> groupMembers = memberIndexer.getByGroupId(groupId);
 		Profile profile = Profile.getInstance();
-        Random _rand = new Random();
-
-        // Delay based on input argument
-        int meanDelay = profile.getDelay();
-        if (meanDelay != 0) {
-            int variance = meanDelay / 2;
-            double randomizedDelay = meanDelay + _rand.nextGaussian() * variance;
-            randomizedDelay = Math.max(randomizedDelay, 0.001d);
-            //System.out.println("multicast: delay -" + randomizedDelay);
-
-            try {
-                Thread.sleep((long)randomizedDelay * 1000l);
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
 
         for(Entry<Integer, Member> entry: groupMembers.entrySet()){
 			Message message = new Message();

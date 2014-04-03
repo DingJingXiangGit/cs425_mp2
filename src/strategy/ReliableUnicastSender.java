@@ -86,6 +86,22 @@ public class ReliableUnicastSender {
 				
 				if (_rand.nextDouble() >= _profile.getDropRate()) {
 
+                    // Delay based on input argument
+                    int meanDelay = _profile.getDelay();
+                    if (meanDelay != 0) {
+                        int variance = meanDelay / 2;
+                        double randomizedDelay = meanDelay + _rand.nextGaussian() * variance;
+                        randomizedDelay = Math.max(randomizedDelay, 0.001d);
+                        //System.out.println("multicast: delay -" + randomizedDelay);
+
+                        try {
+                            Thread.sleep((long)randomizedDelay * 1000l);
+                        }
+                        catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
 					_socket.send(sendPacket);
 				}else{
 //					System.out.println("message dropped");
