@@ -1,5 +1,9 @@
 package strategy;
 
+import model.Member;
+import model.MemberIndexer;
+import model.Message;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -7,11 +11,6 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Map;
-
-import model.Member;
-import model.MemberIndexer;
-import model.Message;
-import model.Profile;
 
 public class ReliableUnicastReceiver implements Runnable {
 	private static int BUFFER_SIZE = 1024;
@@ -96,8 +95,9 @@ public class ReliableUnicastReceiver implements Runnable {
 						}
 					}
 					_nextSequenceTable.put(senderId, _nextReceiveSequence);
-				}else{
+				} else if (message.getAction().equals("ack")) {
 					//receive ack message, cancel retransmission
+                    //System.out.println(message.toString());
 					_unicastSender.ack(message);
 				}
 			} catch (IOException e) {

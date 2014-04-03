@@ -73,7 +73,7 @@ public class ReliableUnicastSender {
 				
 				message.setSequence(new Integer(sendSequence));
 
-                System.out.println("send message content to : " +member.getId()+" with : "+ message);
+//                System.out.println("send message content to : " +member.getId()+" with : "+ message);
 
                 data =  message.getBytes();
 				address = InetAddress.getByName(member._ip);
@@ -85,16 +85,10 @@ public class ReliableUnicastSender {
 				_cachedRetransmissionTask.get(memberId).put(new Integer(sendSequence), timerTask);
 				
 				if (_rand.nextDouble() >= _profile.getDropRate()) {
-                    int meanDelay = _profile.getDelay();
-                    int variance = meanDelay / 2;
-                    double randomizedDelay = meanDelay + _rand.nextGaussian() * variance;
-                    randomizedDelay = Math.max(randomizedDelay, 0.1d);
-                    System.out.println("delaying sending message for " + randomizedDelay);
 
-                    Thread.sleep((long)randomizedDelay * 1000l);
 					_socket.send(sendPacket);
 				}else{
-					System.out.println("message dropped");
+//					System.out.println("message dropped");
 				}
 				timer.schedule(timerTask, EXPIRE_TIME);
 				_nextSendSequence.put(memberId, sendSequence + 1);
@@ -102,9 +96,6 @@ public class ReliableUnicastSender {
             catch (IOException e) {
 				e.printStackTrace();
 			}
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
 	}
 
@@ -120,13 +111,13 @@ public class ReliableUnicastSender {
 
 		member = task.getMember();
 		sequence = task.getSequence();
-		System.out.println("start resend = target "+member.getId()+" sequence "+sequence);
+//		System.out.println("start resend = target "+member.getId()+" sequence "+sequence);
 
 		synchronized(_mutex){
 			message = _cachedMessages.get(member.getId()).get(sequence);
 			timer = _timerTable.get(member.getId()).get(sequence);
             if (timer == null) {
-                System.out.println("null timer");
+//                System.out.println("null timer");
                 return;
             }
 //			System.out.println("out message: "+message.getSequence() +" source "+message.getId());
@@ -170,7 +161,7 @@ public class ReliableUnicastSender {
 				_cachedMessages.get(memberId).remove(sequence);
 				_cachedRetransmissionTask.get(memberId).remove(sequence);
 			}else{
-				System.out.println("null timer.");
+//				System.out.println("null timer.");
 			}
 		}
 		//System.out.println("[end]ack sequence "+sequence);

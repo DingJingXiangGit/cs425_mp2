@@ -1,19 +1,8 @@
 package strategy;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
+import model.*;
 
-import model.IMessage;
-import model.MemberIndexer;
-import model.Profile;
-import model.TotalOrderMessageType;
-import model.TotalOrderMulticastMessage;
+import java.util.*;
 
 public class TotalOrderMulticast{
 	private static TotalOrderMulticast _instance = new TotalOrderMulticast();

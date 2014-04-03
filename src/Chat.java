@@ -11,8 +11,9 @@ import java.util.*;
 public class Chat {
 	private ReliableUnicastReceiver _receiver;
 
-	//private ReliableUnicastSender _sender;
-	
+    /*
+
+     */
 	public Chat(int delayTime, double dropRate, String file, int id, String orderType){
 		List<Member> members = new ArrayList<Member>();
 		Profile profile = Profile.getInstance();
@@ -30,7 +31,8 @@ public class Chat {
 				member._userName = parts[3];
 				member._groupId = Integer.parseInt(parts[4]);
 
-                if (member._id == TotalOrderSequencer._id && !orderType.equals("TotalOrder")) {
+                // Ignore the sequencer if it's not Total Order configuration
+                if (member._id == TotalOrderSequencer._id && !orderType.toUpperCase().equals("TOTAL")) {
                     continue;
                 }
 
@@ -42,24 +44,29 @@ public class Chat {
 					profile.name = parts[3];
 					profile.delay = delayTime;
 					profile.dropRate = dropRate;
-					if(orderType.equals("TotalOrder")){
+					if (orderType.toUpperCase().equals("TOTAL")) {
 						profile.setMulticastType(MulticastType.TotalOrder);
-					}else if(orderType.equals("CausalOrder")){
+					}
+                    else if (orderType.toUpperCase().equals("CAUSAL")) {
 						profile.setMulticastType(MulticastType.CausalOrder);
 					}
 				}
 			}
-		} catch (FileNotFoundException e) {
+		}
+        catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 		
 		memberIndexer.addMembers(members);
+
+        // Set up networking
 		this._receiver = ReliableUnicastReceiver.getInstance(); 
 		this._receiver.init(profile.ip, profile.port);
 	}
 	
 	public void waitUserMessage(){
 		Console console = System.console();
+          // Initial broadcast check
 //        Iterator it = MemberIndexer.getInstance().getAllMembers().entrySet().iterator();
 //        int myId = Profile.getInstance().getId();
 //        while (it.hasNext()) {
@@ -86,9 +93,6 @@ public class Chat {
 	}
 	
 	private void multicastMessage(String content){
-		//BasicMulticast reliableMulticast = BasicMulticast.getInstance();
-		//reliableMulticast.send(1, content);
-		
 		if(Profile.getInstance().getMulticastType() == MulticastType.CausalOrder){
 			CausalOrderMulticast causalOrderMulticast = CausalOrderMulticast.getInstance();
 			causalOrderMulticast.send(1, content);
@@ -100,7 +104,7 @@ public class Chat {
 	
 	public static void main(String[] args){
 		if(args.length != 5){
-			System.out.println("java Chat configFile delayTime dropRate selfId order");
+			System.out.println("usage: java Chat [configFile] [delayTime(s)] [dropRate(0-1)] [selfId] [causal|total]");
 			return;
 		}
 		Chat chat = new Chat(

@@ -10,7 +10,8 @@ import java.util.TimerTask;
  * User: treziapov
  * Date: 3/31/14
  * Time: 5:19 PM
- * To change this template use File | Settings | File Templates.
+ *
+ * A thread Task to check for the available Total Order message
  */
 public class MessageWaitTask extends TimerTask {
     private TotalOrderMulticastWithSequencer _owner;
@@ -20,25 +21,23 @@ public class MessageWaitTask extends TimerTask {
     {
         _owner = owner;
         _timer = new Timer();
-        _timer.schedule(this, 0, Profile.getInstance().getDelay() * 1000);
+        _timer.schedule(this, 0, 1000 + Profile.getInstance().getDelay() * 1000);
     }
 
     public Timer getTimer() {
         return _timer;
     }
 
+    /*
+        Invoke the Total Order Multicast instance's processing method
+     */
     @Override
     public void run() {
         if (_owner == null) {
-            System.out.println("MessageWaitTask totalordersequencer uninitialized");
             return;
         }
 
-        System.out.println("MessageWaitTask waiting for message");
-        boolean received = _owner.waitForNextMessage();
-
-        if (received) {
-            System.out.println("MessageWaitTask received a message");
-        }
+        boolean result = _owner.waitForNextMessage();
+        //System.out.println("wait for next message - " + (result ? "found" : "failed"));
     }
 }

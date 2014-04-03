@@ -14,18 +14,19 @@ import java.util.*;
 public class TotalOrderMulticastWithSequencer {
     private static TotalOrderMulticastWithSequencer _instance = new TotalOrderMulticastWithSequencer();
     private BasicMulticast basicMulticast;
-    Queue<TotalOrderMulticastMessage> holdbackQueue;
-    Queue<TotalOrderMulticastMessage> orderQueue;
-    Set<Integer> orderSequencesReceived;
+    private Map<Integer, TotalOrderMulticastMessage> holdbackMessageMap;
+    private Map<Integer, TotalOrderMulticastMessage> orderMessageMap;
+    private Set<Integer> orderSequencesReceived;
     private Object _mutex;
 
+    private static int messagesSentCounter = 0;
     private static int nextTotalOrderSequence = 0;
 
     private TotalOrderMulticastWithSequencer()
     {
         basicMulticast = BasicMulticast.getInstance();
-        holdbackQueue = new LinkedList<TotalOrderMulticastMessage>();
-        orderQueue = new LinkedList<TotalOrderMulticastMessage>();
+        holdbackMessageMap = new HashMap<Integer, TotalOrderMulticastMessage>();
+        orderMessageMap = new HashMap<Integer, TotalOrderMulticastMessage>();
         orderSequencesReceived = new HashSet<Integer>();
         _mutex = new Object();
         TimerTask timerTask = new MessageWaitTask(this);
@@ -36,101 +37,105 @@ public class TotalOrderMulticastWithSequencer {
         return _instance;
     }
 
+    /*
+        Send the Chat user's input to all other Chat clients and the Total Order Sequencer
+     */
     public void send(int groupId, String groupMessage) {
-        TotalOrderMulticastMessage tomm;
         int selfId = Profile.getInstance().getId();
-        int messageId;
-        Map<Integer, TotalOrderMulticastMessage > cachedMessage;
+        int messageId = Integer.parseInt(String.format("%d%d", selfId, messagesSentCounter));
+        messagesSentCounter++;
 
-        tomm = new TotalOrderMulticastMessage();
+        TotalOrderMulticastMessage tomm = new TotalOrderMulticastMessage();
+        tomm.setMessageType(TotalOrderMessageType.INITIAL);
         tomm.setContent(groupMessage);
         tomm.setSource(selfId);
+        tomm.setMessageId(messageId);
         tomm.setGroupId(groupId);
         tomm.setTotalOrderSequence(-1);
-        tomm.setMessageType(TotalOrderMessageType.INITIAL);
 
         basicMulticast.send(groupId, tomm);
-//        synchronized (_mutex)
-//        {
-//            nextTotalOrderSequence++;
-//        }
+        //System.out.println("sent: " + tomm.toString());
     }
 
+    /*
+        Store messages from other Chat clients in holdback map to be printed at the right order
+        Order messages from the Sequencer are used to update the order of holdback messages
+            or stored if corresponding message is not in holdback
+     */
     public void delivery(IMessage message) {
+        //System.out.println("received: " + message.toString());
+        // Don't skip the message to yourself to print in Total Order
         TotalOrderMulticastMessage tomm = (TotalOrderMulticastMessage)message;
-
-//        if (tomm.getSource() == Profile.getInstance().getId()){
-//            return;
-//        }
-
-        System.out.println("received: " + tomm.toString());
-
         TotalOrderMessageType messageType = tomm.getMessageType();
+        int messageId = tomm.getMessageId();
+
         synchronized (_mutex)
         {
             if (messageType == TotalOrderMessageType.INITIAL)
             {
-                for (TotalOrderMulticastMessage m : orderQueue)
+                // Already received the Total Order sequence number for this message
+                if (orderMessageMap.containsKey(messageId))
                 {
-                    if (m.getSource().equals(tomm.getSource()) && m.getContent().equals(tomm.getContent())) {
-                        //                    System.out.println(
-                        //                        String.format("changed tos from %d to %d", m.getTotalOrderSequence(), tomm.getTotalOrderSequence())
-                        //                    );
-                        tomm.setTotalOrderSequence(m.getTotalOrderSequence());
-                        orderQueue.remove(m);
-                    }
+                    tomm.setTotalOrderSequence(orderMessageMap.get(messageId).getTotalOrderSequence());
+                    orderMessageMap.remove(messageId);
                 }
 
-                holdbackQueue.add(tomm);
+                // Put the message in the holdback map to be printed at it's turn
+                holdbackMessageMap.put(messageId, tomm);
             }
             else if (messageType == TotalOrderMessageType.ORDER)
             {
-                orderSequencesReceived.add(tomm.getTotalOrderSequence());
-                orderQueue.add(tomm);
-                for (TotalOrderMulticastMessage m : holdbackQueue)
-                {
-                    //System.out.println(m.toString());
-                    if (m.getSource().equals(tomm.getSource()) && m.getContent().equals(tomm.getContent())) {
-    //                    System.out.println(
-    //                        String.format("changed tos from %d to %d", m.getTotalOrderSequence(), tomm.getTotalOrderSequence())
-    //                    );
-                        m.setTotalOrderSequence(tomm.getTotalOrderSequence());
-                        orderQueue.remove(tomm);
-                    }
-                    else {
+                // Record received total order sequence numbers
+                int totalOrderSequence = tomm.getTotalOrderSequence();
+                orderSequencesReceived.add(totalOrderSequence);
 
-                    }
+                // If corresponding message already arrived, update it's total order sequence number
+                if (holdbackMessageMap.containsKey(messageId)) {
+                    TotalOrderMulticastMessage updated_message = holdbackMessageMap.get(messageId);
+                    updated_message.setTotalOrderSequence(totalOrderSequence);
+                    holdbackMessageMap.put(messageId, updated_message);
+                }
+                else {
+                    orderMessageMap.put(messageId, tomm);
                 }
             }
         }
-
-
     }
 
+    /*
+        The wait loop for the next message in total order
+        Returns whether message was found or not
+     */
     public boolean waitForNextMessage()
     {
-        System.out.println(String.format("looking for message with TO sequence - %d", nextTotalOrderSequence));
-
         synchronized (_mutex)
         {
+            // Check if the order message for the next message was received
             if (!orderSequencesReceived.contains(nextTotalOrderSequence)) {
                 return false;
             }
 
-            for (TotalOrderMulticastMessage m : holdbackQueue)
+            // Find the next total order message in the holdback map
+            int nextMessageId = Integer.MIN_VALUE;
+            for (TotalOrderMulticastMessage m : holdbackMessageMap.values())
             {
-                System.out.println(m.toString());
                 if (m.getTotalOrderSequence() == nextTotalOrderSequence)
                 {
+                    nextMessageId = m.getMessageId();
+                    nextTotalOrderSequence++;
                     String out = String.format("message from %d: %s", m.getSource(), m.getContent());
                     System.out.println(out);
-                    holdbackQueue.remove(m);
-                    nextTotalOrderSequence++;
-                    return true;
                 }
             }
 
-            return false;
+            if (nextMessageId != Integer.MIN_VALUE)
+            {
+                holdbackMessageMap.remove(nextMessageId);
+                return true;
+            }
+            else {
+                return false;
+            }
         }
     }
 }
