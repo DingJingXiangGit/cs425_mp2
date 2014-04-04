@@ -89,7 +89,6 @@ public class ReliableUnicastSender {
 
                 // Only send with some probability
 				if (_rand.nextDouble() >= _profile.getDropRate()) {
-
                     // Delay based on input argument
                     int meanDelay = _profile.getDelay();
                     if (meanDelay != 0) {
