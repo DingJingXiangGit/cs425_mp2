@@ -77,9 +77,10 @@ public class ReliableUnicastReceiver implements Runnable {
 					_messageBuffer = _messageBufferTable.get(senderId);
 					_nextReceiveSequence = _nextSequenceTable.get(senderId);
 					//System.out.println("received sequence = "+message.getSequence()+" expected sequence = " + _nextReceiveSequence);
+					_unicastSender.sendAck(message, member);
 					if(message.getSequence() >= _nextReceiveSequence){
 						//avoid duplicated message
-						_unicastSender.sendAck(message, member);
+						//_unicastSender.sendAck(message, member);
 						if(message.getSequence() == _nextReceiveSequence){
 							delivery(message);
 							++_nextReceiveSequence;
