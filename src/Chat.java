@@ -12,7 +12,8 @@ public class Chat {
 	private ReliableUnicastReceiver _receiver;
 
     /*
-
+        Constructor
+        Tries to parse the config file and sets up networking
      */
 	public Chat(int delayTime, double dropRate, String file, int id, String orderType){
 		List<Member> members = new ArrayList<Member>();
@@ -63,7 +64,11 @@ public class Chat {
 		this._receiver = ReliableUnicastReceiver.getInstance(); 
 		this._receiver.init(profile.ip, profile.port);
 	}
-	
+
+    /*
+        Main chat loop
+        Processes user input and sends it to other Chat clients
+     */
 	public void waitUserMessage(){
 		Console console = System.console();
           // Initial broadcast check
@@ -76,7 +81,7 @@ public class Chat {
 //        }
 		
 		while (true) {
-			System.out.print("type your message: ");
+			System.out.println("type your message");
 			String command = console.readLine();
 			if(command.equals("exit")){
 				break;
@@ -87,11 +92,17 @@ public class Chat {
 		}
 		System.out.println("Bye.");
 	}
-	
+
+    /*
+        Start listening on a socket in another thread
+     */
 	public void startListen(){
 		(new Thread(this._receiver)).start();
 	}
-	
+
+    /*
+        Multicast message based on the order type
+     */
 	private void multicastMessage(String content){
 		if(Profile.getInstance().getMulticastType() == MulticastType.CausalOrder){
 			CausalOrderMulticast causalOrderMulticast = CausalOrderMulticast.getInstance();

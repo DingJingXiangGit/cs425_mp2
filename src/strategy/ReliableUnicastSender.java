@@ -42,7 +42,11 @@ public class ReliableUnicastSender {
 			e.printStackTrace();
 		}
 	}
-	
+
+    /*
+        Unicast send
+        Also retransmits in case of packet drops
+     */
 	public void send(Message message, Member member){
 		Timer timer;
 		TimerTask timerTask;
@@ -53,6 +57,7 @@ public class ReliableUnicastSender {
 		DatagramPacket sendPacket;
 		memberId = member.getId();
 		synchronized(_mutex){
+            // Check if the message or its sender are new
 			if(_nextSendSequence.containsKey(memberId) == false){
 				_nextSendSequence.put(memberId, 0);
 			}
@@ -72,9 +77,7 @@ public class ReliableUnicastSender {
 			try {
 				
 				message.setSequence(new Integer(sendSequence));
-
 //                System.out.println("send message content to : " +member.getId()+" with : "+ message);
-
                 data =  message.getBytes();
 				address = InetAddress.getByName(member._ip);
 				sendPacket = new DatagramPacket(data, data.length, address,  member._port);
@@ -83,7 +86,8 @@ public class ReliableUnicastSender {
 				_cachedMessages.get(memberId).put(new Integer(sendSequence), message);
 				_timerTable.get(memberId).put(new Integer(sendSequence), timer);
 				_cachedRetransmissionTask.get(memberId).put(new Integer(sendSequence), timerTask);
-				
+
+                // Only send with some probability
 				if (_rand.nextDouble() >= _profile.getDropRate()) {
 
                     // Delay based on input argument
@@ -106,6 +110,7 @@ public class ReliableUnicastSender {
 				}else{
 //					System.out.println("message dropped");
 				}
+                // Set up retransmission in case unicast doesn't reach
 				timer.schedule(timerTask, EXPIRE_TIME);
 				_nextSendSequence.put(memberId, sendSequence + 1);
 			}
@@ -115,6 +120,9 @@ public class ReliableUnicastSender {
         }
 	}
 
+    /*
+        The retransmission thread handler
+     */
 	public void resend(RetransmissionTask task) {
 		Timer timer;
 		Message message;
@@ -159,7 +167,11 @@ public class ReliableUnicastSender {
 			}
 		}
 	}
-	
+
+    /*
+        Acknowledge the message was sent
+        Stop tracking and resending
+     */
 	public void ack(Message message) {
 		Timer timer;
 		TimerTask task;
@@ -184,6 +196,9 @@ public class ReliableUnicastSender {
 
 	}
 
+    /*
+        Reply back acknowledging the given message
+    */
 	public void sendAck(Message msg, Member member) throws IOException {
 		InetAddress address;
 		Message message;

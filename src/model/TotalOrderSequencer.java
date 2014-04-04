@@ -15,7 +15,6 @@ import java.util.Scanner;
  * User: treziapov
  * Date: 3/30/14
  * Time: 7:41 PM
- * To change this template use File | Settings | File Templates.
  */
 public class TotalOrderSequencer {
     private static TotalOrderSequencer _instance;
