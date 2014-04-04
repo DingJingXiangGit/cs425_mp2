@@ -21,15 +21,22 @@ Compilation
 ----------------------------
 Running / Command line usage
 ----------------------------
-	java Chat [configFile] [delayTime] [dropRate] [selfId] [orderType]
+	java Chat [configFile] [delayTime] [dropRate] [selfId] [orderType] [printMode] [testMode]
 		configFile - the path to the configuration file
 		delayTime - time to delay unicast send in seconds
 		dropRate - probability of dropping pakcets, between 0 amd 1.0
 		selfId - the id of the chat client in configuration file
 		orderType - ordering on messages, either "causal" or "total"
+        printMode - "detail" or "brief" 
+                    "detail" indicates to print out packet loss and retransmission event
+                    "brief" indicates not to print out packet loss and retransmission event
+        testMode -  "boost" or "normal"
+                    "boost" indicates initially test system by automatically sending 20 messages.
+                    "normal" do not initial program by automatically sending message.
 
-	Note: total ordering is implemented using a sequencer, which needs to be
-	started up before sending messages as follows (from project root folder)
+	Note: there are two implementation of total ordering multicast isis algorithm and sequencer algorithm
+    for sequencer algorithm, we need to start up "TotalOrderSequencer" before sending messages as follows
+    (from project root folder).
 		
 	java model/TotalOrderSequencer [configFile]
 		configFile - the path to the configuration file (same as Chat's)
