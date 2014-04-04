@@ -20,10 +20,10 @@ import java.util.Scanner;
 public class TotalOrderSequencer {
     private static TotalOrderSequencer _instance;
     private ReliableUnicastReceiver _receiver;
-    private ReliableUnicastSender _unicastSender;
+    //private ReliableUnicastSender _unicastSender;
     private BasicMulticast _basicMulticast = BasicMulticast.getInstance();
 
-    private static int BUFFER_SIZE = 1024;
+    //private static int BUFFER_SIZE = 1024;
 
     public static int _id = 100;
     private static int _sequence = 0;

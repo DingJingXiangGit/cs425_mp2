@@ -8,7 +8,8 @@ public class Profile {
 	public int delay;
 	public double dropRate;
 	public MulticastType multicastType;
-	
+	public boolean isDetailMode = false;
+	public boolean isBoost;
 	public MulticastType getMulticastType() {
 		return multicastType;
 	}

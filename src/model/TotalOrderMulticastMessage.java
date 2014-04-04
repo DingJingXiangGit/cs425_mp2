@@ -86,16 +86,21 @@ public class TotalOrderMulticastMessage implements IMessage, Serializable, Compa
 	
 	@Override
 	public int compareTo(TotalOrderMulticastMessage o) {
-		System.out.println(this.sequence +" v.s "+o.sequence +" ? == "+o.sequence.equals(this.sequence));
+		//System.out.println(this.sequence +" v.s "+o.sequence +" ? == "+o.sequence.equals(this.sequence));
+		//return this.sequence - o.sequence;
 		if(o.sequence.equals(this.sequence) == false){
 			return this.sequence - o.sequence;
 		}else{
 			if(o.isDeliverable() == false && this.isDeliverable() == true){
-				return -1;
-			}else if(o.isDeliverable() == true && this.isDeliverable() == false){
 				return 1;
+			}else if(o.isDeliverable() == true && this.isDeliverable() == false){
+				return -1;
 			}else{
-				return this.source - o.source;
+				if(this.source == o.source){
+					return this.messageId - o.messageId;
+				}else{
+					return this.source - o.source;
+				}
 			}
 		}
 	}

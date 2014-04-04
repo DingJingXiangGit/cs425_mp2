@@ -24,14 +24,14 @@ public class MemberIndexer {
 	}
 	
 	public void addMembers(List<Member> members){
-		System.out.println("member list:");
+		//System.out.println("member list:");
 		for(Member member: members){
 			if(_memberGroupTable.containsKey(member._groupId) == false){
 				_memberGroupTable.put(member._groupId, new  Hashtable<Integer, Member>());
 			}
 			_memberGroupTable.get(member._groupId).put(member._id, member);
 			_memberTable.put(member._id, member);
-			System.out.println(member._id +": "+member._ip +": "+member._port);
+			//System.out.println(member._id +": "+member._ip +": "+member._port);
 		}
 	}
 	
