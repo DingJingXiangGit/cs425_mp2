@@ -1,16 +1,16 @@
 package strategy;
 
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import model.CausalOrderMulticastMessage;
 import model.IMessage;
 import model.MemberIndexer;
 import model.Profile;
 
-public class CausalOrderMulticast{
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+public class CausalOrderMulticast {
 	private Map<Integer, Integer[]> groupTimeVector;
 	private static CausalOrderMulticast _instance = new CausalOrderMulticast();
 	private BasicMulticast _basicMulticast;
@@ -23,7 +23,7 @@ public class CausalOrderMulticast{
 		_mutex = new Object();
 	}
 	
-	public static CausalOrderMulticast getInstance(){
+	public static CausalOrderMulticast getInstance() {
 		return _instance;
 	}
 	
@@ -59,6 +59,7 @@ public class CausalOrderMulticast{
 			CausalOrderMulticastMessage comm = (CausalOrderMulticastMessage)message;
 			if(comm.getSource() == Profile.getInstance().getId()){
 				return;
+
 			}
 			List<CausalOrderMulticastMessage> holdbackQueue;
 	//		List<CausalOrderMulticastMessage> deleteQueue;
@@ -131,10 +132,10 @@ public class CausalOrderMulticast{
 		//System.out.println("======= delivery end =======\n");
 	}
 	
-	private String getTimeVectorString(Integer[] timeVector){
+	private String getTimeVectorString(Integer[] timeVector) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("[");
-		for(int i = 0; i < timeVector.length; ++i){
+		for(int i = 0; i < timeVector.length; ++i) {
 			builder.append(timeVector[i]);
 			if(i != timeVector.length - 1){
 				builder.append(", ");

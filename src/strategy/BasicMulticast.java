@@ -16,10 +16,11 @@ public class BasicMulticast{
 		_sourceGroupSequence = new Hashtable<Integer, Integer>();
 		_sender = ReliableUnicastSender.getInstance();
 	}
+
 	public static BasicMulticast getInstance(){
 		return _instance;
 	}
-	
+
 	public void send(int groupId, IMessage content) {
 		BasicMulticastMessage message = new BasicMulticastMessage();
 		message.content = content;
@@ -57,7 +58,10 @@ public class BasicMulticast{
 		
 		_sender.send(message, groupMembers.get(source));
 	}
-	
+
+    /*
+        Unicast send the message to all group members
+     */
 	private void multicast(int groupId, BasicMulticastMessage data ){
 		MemberIndexer memberIndexer = MemberIndexer.getInstance();
 		Map<Integer, Member> groupMembers = memberIndexer.getByGroupId(groupId);
@@ -72,6 +76,9 @@ public class BasicMulticast{
 		}
 	}
 
+    /*
+        Deliver message based on total order and type of process
+     */
 	public void delivery(BasicMulticastMessage message) {
         if (Profile.getInstance().id == TotalOrderSequencer._id) {
             TotalOrderSequencer tos = TotalOrderSequencer.getInstance();

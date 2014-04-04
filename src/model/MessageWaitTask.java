@@ -11,12 +11,16 @@ import java.util.TimerTask;
  * Date: 3/31/14
  * Time: 5:19 PM
  *
- * A thread Task to check for the available Total Order message
+ *  A thread Task to check for the available Total Order message
  */
 public class MessageWaitTask extends TimerTask {
     private TotalOrderMulticastWithSequencer _owner;
     private Timer _timer;
 
+    /*
+        Constructor
+        Starts running the task in regular intervals
+     */
     public MessageWaitTask(TotalOrderMulticastWithSequencer owner)
     {
         _owner = owner;

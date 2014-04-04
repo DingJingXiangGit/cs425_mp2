@@ -4,6 +4,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+/*
+    Helper class to track and access information about Chat members
+ */
 public class MemberIndexer {
 	private Map<Integer, Member> _memberTable;
 	private Map<Integer, Hashtable<Integer, Member>> _memberGroupTable;
