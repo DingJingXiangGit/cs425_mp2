@@ -89,8 +89,9 @@ public class BasicMulticast{
 		} else if (Profile.getInstance().getMulticastType() == MulticastType.TotalOrder){
 			TotalOrderMulticast totalOrderMulticast = TotalOrderMulticast.getInstance();
 			totalOrderMulticast.delivery(message.getContent());
-			//TotalOrderMulticastWithSequencer tom = TotalOrderMulticastWithSequencer.getInstance();
-			//tom.delivery(message.getContent());
+        } else if (Profile.getInstance().getMulticastType() == MulticastType.TotalOrderWithSequencer) {
+			TotalOrderMulticastWithSequencer tom = TotalOrderMulticastWithSequencer.getInstance();
+			tom.delivery(message.getContent());
 		}
 		
 	}

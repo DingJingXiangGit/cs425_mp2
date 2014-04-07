@@ -27,7 +27,7 @@ public class ReliableUnicastSender {
 	public static ReliableUnicastSender getInstance(){
 		return _instance;
 	}
-	
+
 	private ReliableUnicastSender(){
 		_mutex = new Object();
 		_cachedMessages = new Hashtable<Integer, Hashtable<Integer, Message>> ();
@@ -42,6 +42,12 @@ public class ReliableUnicastSender {
 			e.printStackTrace();
 		}
 	}
+
+    private long getRandomDelay(int meanDelay) {
+        int variance = meanDelay / 2;
+        double randomizedDelay = meanDelay + _rand.nextGaussian() * variance;
+        return (long)Math.max(randomizedDelay, 1);
+    }
 
     /*
         Unicast send
@@ -94,7 +100,7 @@ public class ReliableUnicastSender {
                     if (meanDelay != 0) {
                         Timer delayTimer = new Timer();
                         TimerTask delaySender = new DelaySender(sendPacket, _socket);
-                        delayTimer.schedule(delaySender, (long)meanDelay);
+                        delayTimer.schedule(delaySender, getRandomDelay(meanDelay));
                     }else{
                     	_socket.send(sendPacket);
                     }
@@ -160,7 +166,7 @@ public class ReliableUnicastSender {
                     if (meanDelay != 0) {
                         Timer delayTimer = new Timer();
                         TimerTask delaySender = new DelaySender(sendPacket, _socket);
-                        delayTimer.schedule(delaySender, (long)meanDelay);
+                        delayTimer.schedule(delaySender, getRandomDelay(meanDelay));
                     }else{
                     	_socket.send(sendPacket);
                     }
@@ -233,7 +239,7 @@ public class ReliableUnicastSender {
             if (meanDelay != 0) {
                 Timer delayTimer = new Timer();
                 TimerTask delaySender = new DelaySender(sendPacket, _socket);
-                delayTimer.schedule(delaySender, (long)meanDelay);
+                delayTimer.schedule(delaySender, getRandomDelay(meanDelay));
             }else{
             	_socket.send(sendPacket);
             }

@@ -25,7 +25,7 @@ public class MessageWaitTask extends TimerTask {
     {
         _owner = owner;
         _timer = new Timer();
-        _timer.schedule(this, 0, 1000 + Profile.getInstance().getDelay() * 1000);
+        _timer.schedule(this, 0, 1000 + Profile.getInstance().getDelay());
     }
 
     public Timer getTimer() {

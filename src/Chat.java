@@ -1,18 +1,15 @@
+import model.*;
+import strategy.CausalOrderMulticast;
+import strategy.ReliableUnicastReceiver;
+import strategy.TotalOrderMulticast;
+import strategy.TotalOrderMulticastWithSequencer;
+
 import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-
-import model.Member;
-import model.MemberIndexer;
-import model.MulticastType;
-import model.Profile;
-import model.TotalOrderSequencer;
-import strategy.CausalOrderMulticast;
-import strategy.ReliableUnicastReceiver;
-import strategy.TotalOrderMulticast;
 
 public class Chat {
 	private ReliableUnicastReceiver _receiver;
@@ -38,7 +35,7 @@ public class Chat {
 				member._groupId = Integer.parseInt(parts[4]);
 
                 // Ignore the sequencer if it's not Total Order configuration
-                if (member._id == TotalOrderSequencer._id && !orderType.toUpperCase().equals("TOTAL")) {
+                if (member._id == TotalOrderSequencer._id && !orderType.toUpperCase().equals("TOTALSEQUENCER")) {
                     continue;
                 }
 
@@ -56,6 +53,10 @@ public class Chat {
                     else if (orderType.toUpperCase().equals("CAUSAL")) {
 						profile.setMulticastType(MulticastType.CausalOrder);
 					}
+                    else if (orderType.toUpperCase().equals("TOTALSEQUENCER")) {
+                        profile.setMulticastType(MulticastType.TotalOrderWithSequencer);
+                    }
+
 					if(mode.equals("detail")){
 						profile.isDetailMode = true;
 					}else if(mode.equals("brief")){
@@ -136,8 +137,9 @@ public class Chat {
 		}else if(Profile.getInstance().getMulticastType() == MulticastType.TotalOrder){
 			TotalOrderMulticast totalOrderMulticast = TotalOrderMulticast.getInstance();
 			totalOrderMulticast.send(1, content);
-			//TotalOrderMulticastWithSequencer totalOrderMulticast = TotalOrderMulticastWithSequencer.getInstance();
-			//totalOrderMulticast.send(1, content);
+        } else if (Profile.getInstance().getMulticastType() == MulticastType.TotalOrderWithSequencer) {
+			TotalOrderMulticastWithSequencer totalOrderMulticast = TotalOrderMulticastWithSequencer.getInstance();
+			totalOrderMulticast.send(1, content);
 		}
 	}
 	
@@ -145,7 +147,7 @@ public class Chat {
 		
 		
 		if(args.length != 7){
-			System.out.println("usage: java Chat [configFile] [delayTime(s)] [dropRate(0-1)] [selfId] [causal|total] [detail|brief] [boost|normal]");
+			System.out.println("usage: java Chat [configFile] [delayTime(ms)] [dropRate(0-1)] [selfId] [causal|total] [detail|brief] [boost|normal]");
 			return;
 		}
 		Chat chat = new Chat(

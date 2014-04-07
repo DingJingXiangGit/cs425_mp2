@@ -63,7 +63,7 @@ public class TotalOrderMulticastWithSequencer {
             or stored if corresponding message is not in holdback
      */
     public void delivery(IMessage message) {
-        //System.out.println("received: " + message.toString());
+        System.out.println("received: " + message.toString());
         // Don't skip the message to yourself to print in Total Order
         TotalOrderMulticastMessage tomm = (TotalOrderMulticastMessage)message;
         TotalOrderMessageType messageType = tomm.getMessageType();
@@ -108,6 +108,8 @@ public class TotalOrderMulticastWithSequencer {
      */
     public boolean waitForNextMessage()
     {
+        System.out.println("waiting for message with total order - " + nextTotalOrderSequence);
+
         synchronized (_mutex)
         {
             // Check if the order message for the next message was received
@@ -119,6 +121,7 @@ public class TotalOrderMulticastWithSequencer {
             int nextMessageId = Integer.MIN_VALUE;
             for (TotalOrderMulticastMessage m : holdbackMessageMap.values())
             {
+                System.out.println(m.toString());
                 if (m.getTotalOrderSequence() == nextTotalOrderSequence)
                 {
                     nextMessageId = m.getMessageId();
