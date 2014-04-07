@@ -18,6 +18,21 @@ Compilation
 		javac model/*.java
 		javac strategy/*.java
 
+------------------
+Config File Format
+------------------
+	For each line:
+		[id] [ip] [port] [name] [group number]
+
+	Example:
+		0 127.0.0.1 8001 foo 1
+		1 127.0.0.1 8002 bar 1
+		2 127.0.0.1 8003 fb 1
+	
+	Additional line needed for the sequencer, example:
+		100 127.0.0.1 8010 sequencer 1
+		(NOTE: sequencer ID must be 100)
+
 ----------------------------
 Running / Command line usage
 ----------------------------
@@ -47,6 +62,13 @@ Running / Command line usage
 ----------
 Algorithms
 ----------
-	- Causal Ordering
+(See report for details)
+	- Causal Order Multicast
+		Uses vector/Lamport timestamps to achieve causal ordering in message delivery
+		Chat clients deliver each message only when proper causality conditions are satisfied
 		
 	- Total Ordering
+		Without Sequencer: 
+			ISIS algorithm multicast, where all clients agree among themselves on message delivery order
+		With Sequencer: 
+			Chat clients also send messages to a sequencer which specifies the order of message delivery
